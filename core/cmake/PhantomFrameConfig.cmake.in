@@ -1,0 +1,58 @@
+@PACKAGE_INIT@
+
+# Include the exported targets
+include("${CMAKE_CURRENT_LIST_DIR}/PhantomFrameTargets.cmake")
+
+# Set variables for compatibility
+set(PhantomFrame_FOUND TRUE)
+set(PhantomFrame_VERSION "@PROJECT_VERSION@")
+
+# Check for required dependencies
+find_package(OpenCV REQUIRED)
+find_package(PkgConfig REQUIRED)
+
+# Find FFmpeg components
+pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+    libswresample
+)
+
+# Find optional CUDA support
+find_package(CUDA QUIET)
+if(CUDA_FOUND)
+    set(PhantomFrame_CUDA_FOUND TRUE)
+    set(PhantomFrame_CUDA_VERSION ${CUDA_VERSION})
+else()
+    set(PhantomFrame_CUDA_FOUND FALSE)
+endif()
+
+# Find optional OpenCL support
+find_package(OpenCL QUIET)
+if(OpenCL_FOUND)
+    set(PhantomFrame_OPENCL_FOUND TRUE)
+else()
+    set(PhantomFrame_OPENCL_FOUND FALSE)
+endif()
+
+# Set include directories
+set(PhantomFrame_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+# Set library directories
+set(PhantomFrame_LIBRARY_DIRS "@PACKAGE_LIB_INSTALL_DIR@")
+
+# Set binary directories
+set(PhantomFrame_BINARY_DIRS "@PACKAGE_BIN_INSTALL_DIR@")
+
+# Print configuration information
+message(STATUS "PhantomFrame ${PhantomFrame_VERSION} found")
+message(STATUS "  Include directories: ${PhantomFrame_INCLUDE_DIRS}")
+message(STATUS "  Library directories: ${PhantomFrame_LIBRARY_DIRS}")
+message(STATUS "  Binary directories: ${PhantomFrame_BINARY_DIRS}")
+message(STATUS "  CUDA support: ${PhantomFrame_CUDA_FOUND}")
+message(STATUS "  OpenCL support: ${PhantomFrame_OPENCL_FOUND}")
+
+# Check if all required components are available
+check_required_components(PhantomFrame)

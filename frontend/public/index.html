@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta
+      name="description"
+      content="PhantomFrame - Imperceptible video watermarking system for livestreams"
+    />
+    <meta name="keywords" content="video watermarking, livestream, security, copyright protection" />
+    <meta name="author" content="PhantomFrame Team" />
+    
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="PhantomFrame - Video Watermarking System" />
+    <meta property="og:description" content="Imperceptible video watermarking system for livestreams" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://phantomframe.app" />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PhantomFrame - Video Watermarking System" />
+    <meta name="twitter:description" content="Imperceptible video watermarking system for livestreams" />
+    <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+    
+    <title>PhantomFrame - Video Watermarking System</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    
+    <!-- Loading fallback -->
+    <div id="loading-fallback" style="display: none;">
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      ">
+        <div style="text-align: center;">
+          <div style="
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+          "></div>
+          <h2 style="color: #374151; margin: 0 0 8px;">Loading PhantomFrame...</h2>
+          <p style="color: #6b7280; margin: 0;">Please wait while we initialize the application.</p>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+    
+    <!-- Error boundary fallback -->
+    <div id="error-fallback" style="display: none;">
+      <div style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fef2f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      ">
+        <div style="text-align: center; max-width: 500px; padding: 24px;">
+          <div style="
+            width: 64px;
+            height: 64px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: white;
+            font-size: 32px;
+          ">⚠️</div>
+          <h1 style="color: #991b1b; margin: 0 0 16px;">Something went wrong</h1>
+          <p style="color: #7f1d1d; margin: 0 0 24px;">
+            We're sorry, but something unexpected happened while loading PhantomFrame. 
+            Please try refreshing the page or contact support if the problem persists.
+          </p>
+          <button onclick="window.location.reload()" style="
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+          " onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      // Show loading fallback while React app loads
+      document.getElementById('loading-fallback').style.display = 'block';
+      
+      // Hide loading fallback when React app is ready
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          document.getElementById('loading-fallback').style.display = 'none';
+        }, 1000);
+      });
+      
+      // Error handling for React app
+      window.addEventListener('error', function() {
+        document.getElementById('loading-fallback').style.display = 'none';
+        document.getElementById('error-fallback').style.display = 'block';
+      });
+      
+      // Unhandled promise rejection handling
+      window.addEventListener('unhandledrejection', function() {
+        document.getElementById('loading-fallback').style.display = 'none';
+        document.getElementById('error-fallback').style.display = 'block';
+      });
+    </script>
+  </body>
+</html>

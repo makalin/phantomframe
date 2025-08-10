@@ -141,6 +141,235 @@ PhantomFrame has been tested against:
 - Resistant to frame dropping and temporal attacks
 - Optional encryption of watermark payload
 
+## API Documentation
+
+### Endpoints
+
+#### POST /detect
+Detect watermarks in uploaded video files.
+
+**Request:**
+- Method: `POST`
+- Content-Type: `multipart/form-data`
+- Body: `video` file (MP4, AVI, MOV, etc.)
+
+**Response:**
+```json
+{
+  "success": true,
+  "watermark_detected": true,
+  "confidence": 0.987,
+  "payload": "a1b2c3d4e5f6...",
+  "creator_id": "user_12345",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+#### GET /status
+Check service health and status.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "uptime": 86400,
+  "active_detections": 5
+}
+```
+
+#### POST /verify
+Verify a specific payload against known creators.
+
+**Request:**
+```json
+{
+  "payload": "a1b2c3d4e5f6...",
+  "creator_id": "user_12345"
+}
+```
+
+## Advanced Configuration
+
+### VLC Encoder Parameters
+
+```bash
+# Custom watermark strength (default: 1)
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,watermark-strength=2}}"
+
+# Temporal pattern frequency (default: 30 frames)
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,watermark-frequency=60}}"
+
+# Block selection density (default: 0.01 = 1%)
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,watermark-density=0.005}}"
+
+# Seed for pseudo-random selection (default: derived from payload)
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,watermark-seed=12345}}"
+```
+
+### Backend Configuration
+
+Create a `.env` file in the backend directory:
+
+```env
+# Server configuration
+PORT=3000
+NODE_ENV=production
+
+# Database (if using persistent storage)
+DATABASE_URL=postgresql://user:pass@localhost/phantomframe
+
+# JWT secret for creator authentication
+JWT_SECRET=your-super-secret-key
+
+# Rate limiting
+RATE_LIMIT_WINDOW=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# File upload limits
+MAX_FILE_SIZE=500MB
+ALLOWED_VIDEO_FORMATS=mp4,avi,mov,mkv,webm
+```
+
+### Model Configuration
+
+```python
+# model/config.py
+MODEL_CONFIG = {
+    'input_size': (720, 1280, 3),
+    'batch_size': 8,
+    'learning_rate': 0.001,
+    'epochs': 100,
+    'validation_split': 0.2,
+    'early_stopping_patience': 10
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### VLC Build Failures
+```bash
+# Error: CMake cannot find x264
+sudo apt-get install libx264-dev  # Ubuntu/Debian
+brew install x264                  # macOS
+
+# Error: Missing dependencies
+sudo apt-get install build-essential cmake git
+```
+
+#### Watermark Detection Issues
+- **Low confidence scores**: Video may have been heavily compressed or filtered
+- **False positives**: Check if video contains similar content from other sources
+- **No detection**: Ensure video format is supported and file isn't corrupted
+
+#### Performance Issues
+```bash
+# Reduce encoding overhead
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,watermark-density=0.005}}"
+
+# Optimize for specific hardware
+--sout="#transcode{vcodec=h264,venc=x264{watermark-payload=PAYLOAD,preset=fast}}"
+```
+
+### Debug Mode
+
+Enable verbose logging:
+
+```bash
+# VLC debug
+export VLC_VERBOSE=1
+./vlc --verbose=2 --sout="#transcode{...}"
+
+# Backend debug
+DEBUG=phantomframe:* npm start
+
+# Model debug
+python train.py --verbose --debug
+```
+
+## Examples
+
+### OBS Studio Integration
+
+1. **Add VLC as a source:**
+   - Source → Add → VLC Video Source
+   - Playlist: `rtmp://localhost:1935/live/stream`
+
+2. **Configure VLC with watermarking:**
+```bash
+vlc --sout="#transcode{vcodec=h264,venc=x264{watermark-payload=YOUR_PAYLOAD}}:rtp{dst=localhost,port=1935}" input.mp4
+```
+
+### YouTube Live Integration
+
+```bash
+# Stream to YouTube with watermarking
+vlc --sout="#transcode{vcodec=h264,venc=x264{watermark-payload=YOUR_PAYLOAD}}:rtmp{dst=rtmp://a.rtmp.youtube.com/live2/YOUR_STREAM_KEY}" input.mp4
+```
+
+### Batch Processing
+
+```bash
+#!/bin/bash
+# watermark_batch.sh
+for video in *.mp4; do
+    echo "Processing $video..."
+    vlc --sout="#transcode{vcodec=h264,venc=x264{watermark-payload=YOUR_PAYLOAD}}:std{access=file,mux=mp4,dst=watermarked_$video}" "$video" vlc://quit
+done
+```
+
+### Docker Deployment
+
+```dockerfile
+# Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+```bash
+# Build and run
+docker build -t phantomframe-backend .
+docker run -p 3000:3000 phantomframe-backend
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Model tests
+cd model
+python -m pytest tests/
+```
+
+### Integration Tests
+
+```bash
+# Test watermark embedding and extraction
+python tests/integration_test.py --input test_video.mp4 --payload test_payload
+```
+
+### Performance Benchmarks
+
+```bash
+# Benchmark detection speed
+python benchmarks/detection_speed.py --video large_video.mp4 --iterations=100
+
+# Benchmark encoding overhead
+python benchmarks/encoding_overhead.py --input test_stream.mp4 --payload test_payload
+```
+
 ## Roadmap
 - [ ] WebRTC integration for browser-based streaming
 - [ ] Mobile app for on-the-go verification
